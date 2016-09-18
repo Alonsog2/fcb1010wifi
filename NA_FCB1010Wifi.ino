@@ -29,7 +29,7 @@ char ssid[] = "JMC924"; //  your network SSID (name)
 char pass[] = "JMC924JMC924";    // your network password (use for WPA, or use as key for WEP)
 
 // Static IP
-IPAddress ip(192, 168, 1, 100);
+IPAddress ip(192, 168, 1, 101);
 IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 
