@@ -14,7 +14,7 @@
 // -----------------------------------------------------------------------------
 struct MySettings : public midi::DefaultSettings  {
   static const bool UseRunningStatus = false;
-  static const unsigned SysExMaxSize = 4000; 
+  static const unsigned SysExMaxSize = 4000;
 };
 
 MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, Serial, MIDISerialHardW, MySettings);
@@ -32,6 +32,7 @@ char pass[] = "JMC924JMC924";    // your network password (use for WPA, or use a
 IPAddress ip(192, 168, 1, 101);
 IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
+IPAddress dns(192, 168, 1, 1);
 
 bool isConnected = false;
 // -----------------------------------------------------------------------------
@@ -47,7 +48,10 @@ void setup() {
   Serial.begin(115200);
   Serial.print("Getting IP address...");
 
+  //WiFi.hostname("ESPFCB1010");
+  //WiFi.config(ip, gateway, subnet, dns);
   WiFi.config(ip, gateway, subnet);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pass);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -67,13 +71,14 @@ void setup() {
   Serial.println(":5004");
   Serial.println("Then press the Connect button");
   Serial.println("Then open a MIDI listener (eg MIDI-OX) and monitor incoming notes");
-
+  delay(2000);
+  
   // Create a session and wait for a remote host to connect to us
   AppleMIDI.begin("FCB1010");
 
   AppleMIDI.OnConnected(OnAppleMidiConnected);
   AppleMIDI.OnDisconnected(OnAppleMidiDisconnected);
-  
+
   // preaparar puerto serie Hardware para MIDI IN
   MIDISerialHardW.setHandleNoteOn(handleNoteOnSerial);
   MIDISerialHardW.setHandleNoteOff(handleNoteOffSerial);
@@ -102,22 +107,22 @@ void loop() {
 // ====================================================================================
 
 void handleNoteOnSerial(byte channel, byte pitch, byte velocity) {
-   AppleMIDI.noteOn((appleMidi::DataByte)pitch, (appleMidi::DataByte)velocity, (appleMidi::Channel)channel);
+  AppleMIDI.noteOn((appleMidi::DataByte)pitch, (appleMidi::DataByte)velocity, (appleMidi::Channel)channel);
 }
 
 
 void handleNoteOffSerial(byte channel, byte pitch, byte velocity) {
-   AppleMIDI.noteOff((appleMidi::DataByte)pitch, (appleMidi::DataByte)velocity, (appleMidi::Channel)channel);
+  AppleMIDI.noteOff((appleMidi::DataByte)pitch, (appleMidi::DataByte)velocity, (appleMidi::Channel)channel);
 }
 
 
 void handleProgramChangeSerial(byte channel, byte number) {
-   AppleMIDI.programChange((appleMidi::DataByte)number,(appleMidi::Channel)channel);
+  AppleMIDI.programChange((appleMidi::DataByte)number, (appleMidi::Channel)channel);
 }
 
 
 void handleControlChangeSerial(byte channel, byte number, byte value) {
-   AppleMIDI.controlChange((appleMidi::DataByte)number, (appleMidi::DataByte)value, (appleMidi::Channel)channel);
+  AppleMIDI.controlChange((appleMidi::DataByte)number, (appleMidi::DataByte)value, (appleMidi::Channel)channel);
 }
 
 
