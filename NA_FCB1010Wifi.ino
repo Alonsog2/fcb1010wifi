@@ -48,9 +48,9 @@ void setup() {
   Serial.begin(115200);
   Serial.print("Getting IP address...");
 
-  //WiFi.hostname("ESPFCB1010");
   //WiFi.config(ip, gateway, subnet, dns);
   WiFi.config(ip, gateway, subnet);
+  WiFi.hostname("ESP-FCB1010");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pass);
 
