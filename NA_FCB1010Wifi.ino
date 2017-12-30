@@ -1,10 +1,13 @@
-// These need to be included when using standard Ethernet
+#include <RemoteDebug.h>               //https://github.com/JoaoLopesF/RemoteDebug
+RemoteDebug Debug;
+
+#define HOST_NAME "NA-FCB1010"         // nombre de Host de este esp8266
+
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
 
 #include "AppleMidi.h"
-
 
 #include "MIDI.h" //librería local
 
@@ -22,19 +25,20 @@ MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, Serial, MIDISerialHardW, MySettings)
 midi::MidiType inType;
 
 
-// -----------------------------------------------------------------------------
-// setup WIFI
-// -----------------------------------------------------------------------------
-char ssid[] = "JMC924"; //  your network SSID (name)
-char pass[] = "JMC924JMC924";    // your network password (use for WPA, or use as key for WEP)
-
-// Static IP
-IPAddress ip(192, 168, 1, 101);
-IPAddress gateway(192, 168, 1, 1);
-IPAddress subnet(255, 255, 255, 0);
-IPAddress dns(192, 168, 1, 1);
+//// -----------------------------------------------------------------------------
+//// setup WIFI
+//// -----------------------------------------------------------------------------
+//char ssid[] = "JMC924"; //  your network SSID (name)
+//char pass[] = "JMC924JMC924";    // your network password (use for WPA, or use as key for WEP)
+//
+//// Static IP
+//IPAddress ip(192, 168, 1, 101);
+//IPAddress gateway(192, 168, 1, 1);
+//IPAddress subnet(255, 255, 255, 0);
+//IPAddress dns(192, 168, 1, 1);
 
 bool isConnected = false;
+unsigned long tAnteriorPrb = millis();
 // -----------------------------------------------------------------------------
 
 
@@ -46,31 +50,41 @@ APPLEMIDI_CREATE_INSTANCE(WiFiUDP, AppleMIDI); // see definition in AppleMidi_De
 // -----------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
-  Serial.print("Getting IP address...");
 
-  //WiFi.config(ip, gateway, subnet, dns);
-  WiFi.config(ip, gateway, subnet);
-  WiFi.hostname("ESP-FCB1010");
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, pass);
+//  //WiFi.config(ip, gateway, subnet, dns);
+//  WiFi.config(ip, gateway, subnet);
+//  WiFi.hostname(HOST_NAME);
+//  WiFi.mode(WIFI_STA);
+//  WiFi.begin(ssid, pass);
+//
+//  while (WiFi.status() != WL_CONNECTED) {
+//    delay(500);
+//    Serial.print(".");
+//  }
+//
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
+  WiFi.hostname(HOST_NAME);         // Host name of WiFi
+  Serial.print("Conectando WiFi...");
+  execWifiManager();                // Exec WifiManager
+  Serial.print("Inicializando OTA...");
+  inicializarOTA();                 // Update over the air (OTA)
+  Serial.print("Inicializando MDNS...");
+  inicializarMDNS();                // Register host name in mDNS y debug remoto
+  // a partir de aquí funciona el modo Debug sobre wifi
+  
+  Debug.println("");
+  Debug.println("WiFi connected");
 
-  Serial.println();
-  Serial.print("IP address is ");
-  Serial.println(WiFi.localIP());
+  Debug.println();
+  Debug.print("IP address is ");
+  Debug.println(WiFi.localIP());
 
-  Serial.println("OK, now make sure you an rtpMIDI session that is Enabled");
-  Serial.print("Add device named FCB1010 with Host/Port ");
-  Serial.print(WiFi.localIP());
-  Serial.println(":5004");
-  Serial.println("Then press the Connect button");
-  Serial.println("Then open a MIDI listener (eg MIDI-OX) and monitor incoming notes");
+  Debug.println("OK, now make sure you an rtpMIDI session that is Enabled");
+  Debug.print("Add device named FCB1010 with Host/Port ");
+  Debug.print(WiFi.localIP());
+  Debug.println(":5004");
+  Debug.println("Then press the Connect button");
+  Debug.println("Then open a MIDI listener (eg MIDI-OX) and monitor incoming notes");
   delay(2000);
   
   // Create a session and wait for a remote host to connect to us
@@ -98,6 +112,31 @@ void loop() {
 
   // escuchar el puerto MIDI serial
   MIDISerialHardW.read();
+
+  //comprobar conexión Wifi
+  if (WiFi.status() != WL_CONNECTED) {
+    WiFi.begin(); //execWifiManager();
+  }
+
+  // repasar los servicios de fondo
+  chkOTA();
+  chkDebug();
+
+  yield();
+
+  // send a note every second (para pruebas)
+//  // (dont cáll delay(1000) as it will stall the pipeline)
+//  if (isConnected && (millis() - tAnteriorPrb) > 1000)
+//  {
+//    tAnteriorPrb = millis();
+//    byte note = 45;
+//    byte velocity = 55;
+//    byte channel = 1;
+//
+//    AppleMIDI.noteOn(note, velocity, channel);
+//    AppleMIDI.noteOff(note, velocity, channel);
+//  }
+
 }
 
 
@@ -135,8 +174,8 @@ void handleControlChangeSerial(byte channel, byte number, byte value) {
 // -----------------------------------------------------------------------------
 void OnAppleMidiConnected(uint32_t ssrc, char* name) {
   isConnected  = true;
-  Serial.print("Connected to session ");
-  Serial.println(name);
+  Debug.print("Connected to session ");
+  Debug.println(name);
 }
 
 // -----------------------------------------------------------------------------
@@ -144,7 +183,7 @@ void OnAppleMidiConnected(uint32_t ssrc, char* name) {
 // -----------------------------------------------------------------------------
 void OnAppleMidiDisconnected(uint32_t ssrc) {
   isConnected  = false;
-  Serial.println("Disconnected");
+  Debug.println("Disconnected");
 }
 
 
