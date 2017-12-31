@@ -10,11 +10,9 @@ void inicializarMDNS() {
 
   // Register the services
   //MDNS.addService("http", "tcp", 80);   // Web server
-  MDNS.addService("telnet", "tcp", 23); // Telnet server RemoteDebug
-  //MDNS.addService("apple-midi", "udp", 5004); // rtp-midi 
+  MDNS.addService("telnet", "tcp", 23); // Telnet server for RemoteDebug
+  MDNS.addService("apple-midi", "udp", 5004); // rtp-midi 
   
-
-
   inicializarDebug();                   // Debug remoto via telnet
   Serial.println("Inicilizado debug remoto via telnet");
 }

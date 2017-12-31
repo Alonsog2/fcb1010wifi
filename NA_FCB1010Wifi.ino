@@ -1,7 +1,7 @@
 #include <RemoteDebug.h>               //https://github.com/JoaoLopesF/RemoteDebug
 RemoteDebug Debug;
 
-#define HOST_NAME "NA-FCB1010"         // nombre de Host de este esp8266
+#define HOST_NAME "NA_FCB1010"         // nombre de Host de este esp8266
 
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
@@ -24,21 +24,9 @@ MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, Serial, MIDISerialHardW, MySettings)
 
 midi::MidiType inType;
 
-
-//// -----------------------------------------------------------------------------
-//// setup WIFI
-//// -----------------------------------------------------------------------------
-//char ssid[] = "JMC924"; //  your network SSID (name)
-//char pass[] = "JMC924JMC924";    // your network password (use for WPA, or use as key for WEP)
-//
-//// Static IP
-//IPAddress ip(192, 168, 1, 101);
-//IPAddress gateway(192, 168, 1, 1);
-//IPAddress subnet(255, 255, 255, 0);
-//IPAddress dns(192, 168, 1, 1);
-
 bool isConnected = false;
 unsigned long tAnteriorPrb = millis();
+
 // -----------------------------------------------------------------------------
 
 
@@ -88,7 +76,7 @@ void setup() {
   delay(2000);
   
   // Create a session and wait for a remote host to connect to us
-  AppleMIDI.begin("FCB1010");
+  AppleMIDI.begin("FootCtrl-FCB1010");
 
   AppleMIDI.OnConnected(OnAppleMidiConnected);
   AppleMIDI.OnDisconnected(OnAppleMidiDisconnected);
@@ -124,7 +112,9 @@ void loop() {
 
   yield();
 
+
   // send a note every second (para pruebas)
+
 //  // (dont cáll delay(1000) as it will stall the pipeline)
 //  if (isConnected && (millis() - tAnteriorPrb) > 1000)
 //  {
